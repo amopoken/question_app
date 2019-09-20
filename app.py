@@ -1,7 +1,13 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, g
+from db import get_db
 
 app = Flask(__name__)
 
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'sqlite3_db'):
+        g.sqlite3_db.close()
 
 
 @app.route('/register')
