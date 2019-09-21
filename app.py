@@ -40,6 +40,7 @@ def register():
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+    error = None
     user = get_current_user()
     if request.method == 'POST':
         db = get_db()
@@ -51,8 +52,8 @@ def login():
             session['user'] = user['name']
             return redirect(url_for('index'))
         else:
-            return 'password is wrong'
-    return render_template('login.html')
+            error = "Password is incorrect or user does not exists"
+    return render_template('login.html', error = error)
 
 @app.route('/question/<question_id>')
 def question(question_id):
