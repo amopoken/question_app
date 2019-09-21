@@ -26,6 +26,10 @@ def close_db(error):
 def register():
     if request.method == 'POST':
         db = get_db()
+        existing_user_cur = db.execute('select id from users where name = ?', [request.form['name']])
+        exist_user = existing_user_cur.fetchone()
+        if exist_user:
+            return render_template('register.html', error = 'User already exists. Pick another name')
         db.execute('insert into users(name, password, expert, admin) values (?, ?, ?, ?)', [request.form['name'], \
             generate_password_hash(request.form['password'], method='sha256'), False, False])
         db.commit()
