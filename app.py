@@ -65,6 +65,8 @@ def question(question_id):
 @app.route('/answer/<question_id>', methods=['GET', 'POST'])
 def answer(question_id):
     user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
     db = get_db()
     if request.method == 'POST':
         db.execute('update questions set answer_text = ? where id = ?', [request.form['answer'], question_id])
@@ -77,6 +79,8 @@ def answer(question_id):
 @app.route('/ask', methods = ['GET', 'POST'])
 def ask():
     user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
     db = get_db()
     if request.method == 'POST':
         db.execute('insert into questions(question_text, expert_id, asked_by_id) values (?, ?, ?)', [request.form['text_question'], request.form['to_expert'], user['id']])
@@ -98,6 +102,8 @@ def index():
 @app.route('/unanswered')
 def unanswered():
     user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
     db = get_db()
     question_cur = db.execute('select questions.id as id, questions.question_text as question, users.name as author from questions join users on users.id = questions.asked_by_id where questions.answer_text is null and questions.expert_id = ?', [user['id']])
     ques_results = question_cur.fetchall()    
@@ -111,6 +117,10 @@ def logout():
 @app.route('/users')
 def users():
     user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+    if user['admin'] == 0:
+        return redirect(url_for('index'))
     db = get_db()
     users_cur = db.execute('select id, name, expert, admin from users')
     users_result = users_cur.fetchall()
@@ -119,6 +129,10 @@ def users():
 @app.route('/promote/<int:user_id>')
 def promote(user_id):
     user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+    if user['admin'] == 0:
+        return redirect(url_for('index'))
     db = get_db()
     db.execute('update users set expert = 1 where id = ?', [user_id])
     db.commit()
